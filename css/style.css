@@ -96,7 +96,7 @@ h3 {
 }
 
 
-.hidden {
+#results-head-div .hidden {
   display: none;
 }
 
@@ -112,4 +112,20 @@ ul li {
 
 #main-text {
   color: black;
+}
+
+li:first-of-type {
+  border-top: 2px solid slategray;
+}
+
+li {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid slategray;
+}
+
+#results-head-div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

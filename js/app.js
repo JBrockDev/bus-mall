@@ -36,14 +36,17 @@ function toggleHidden(id) {
 }
 
 function handleResultClick() {
-  toggleHidden("show-results");
   toggleHidden("title");
+  toggleHidden("view-pie")
+  toggleHidden("view-graph");
+  toggleHidden("show-results");
   toggleHidden("result-ul");
   Product.renderResults();
 }
 
 function handleResults() {
   toggleHidden("show-results");
+  toggleHidden("results-head-div");
   let button = document.getElementById("show-results");
   button.addEventListener('click', handleResultClick);
 }
@@ -73,37 +76,33 @@ Product.nextId = 0;
 Product.totalVotes = 0;
 Product.votesToComplete = 25;
 Product.products = [];
+Product.lastViewedIndexes = [];
+
+
 
 Product.renderProducts = function() {
-  let productArray = this.getRandomProducts();
+  let indexArray = this.getRandomProducts();
   let i = 1;
-  for (let product of productArray) {
-    product.displayed++;
-    let productName = document.getElementById("prod-" + i + "-name");
-    let productImg = document.getElementById("prod-" + i + "-img");
-    productName.textContent = product.name;
-    productImg.setAttribute("src", product.imgPath);
-    productImg.addEventListener('click', handleClick);
-    productName.parentElement.id = product.id;
+  for (let index of indexArray) {
+    Product.products[index].renderProduct(i);
     i++;
   }
 }
 
 Product.getRandomProducts = function() {
   let returnArray = [];
-  let randomIndexArray = [];
   let productArray = this.products;
   for (let i = 0; i < 3; i++) {
     let exists = true;
     while(exists) {
       let index = randomProduct(0, productArray.length - 1);
-      if (!randomIndexArray.includes(index)) {
+      if (!returnArray.includes(index) && !Product.lastViewedIndexes.includes(index)) {
         exists = false;
-        randomIndexArray.push(index);
-        returnArray.push(productArray[index]);
+        returnArray.push(index);
       }
     }
   }
+  Product.lastViewedIndexes = [...returnArray];
   return returnArray;
 }
 
@@ -111,19 +110,19 @@ Product.renderResults = function() {
   sortArray(this.products);
   let ulElem = document.getElementById("result-ul");
   toggleHidden("result-ul");
+  let i = 0;
   for (let product of this.products) {
     let newLi = _createElement("li", ulElem);
-    let percentage;
-    if (product.displayed === 0) {
-      percentage = 0;
-    } else {
-      percentage = product.votedFor / product.displayed;
-      percentage *= 100;
-      percentage = round(percentage);
-    }
-    newLi.textContent = product.name + ": " + product.votedFor + " out of " + product.displayed + " shown. (" + percentage + "%)";
+    newLi.id = i;
+    newLi.textContent = getOutputString(product);
+    let pieButton = _createElement("button", newLi);
+    pieButton.textContent = "🥧";
+    let barButton = _createElement("button", newLi);
+    barButton.textContent = "📊";
+    i++;
   }
 }
+
 
 Product.prototype.incrementDisplay = function() {
   this.displayed++;
@@ -133,32 +132,55 @@ Product.prototype.votedFor = function() {
   this.votedFor++;
 }
 
+function getOutputString(product) {
+  let percentage;
+  if (product.displayed === 0) {
+    percentage = 0;
+  } else {
+    percentage = product.votedFor / product.displayed;
+    percentage *= 100;
+    percentage = round(percentage);
+  }
+  let outputString = product.name + ": " + product.votedFor + " out of " + product.displayed + " shown. (" + percentage + "%)";
+  return outputString;
+}
+
 function randomProduct(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+Product.prototype.renderProduct = function(index) {
+  this.displayed++;
+  let productName = document.getElementById("prod-" + index + "-name");
+  let productImg = document.getElementById("prod-" + index + "-img");
+  productName.textContent = this.name;
+  productImg.setAttribute("src", this.imgPath);
+  productImg.addEventListener('click', handleClick);
+  productName.parentElement.id = this.id;
+}
+
 let newProducts = [
-  ["Bag", "img/bag.jpg"],
-  ["Banana", "img/banana.jpg"],
-  ["Bathroom", "img/bathroom.jpg"],
-  ["Boots", "img/boots.jpg"],
-  ["Breakfast", "img/breakfast.jpg"],
-  ["Bubblegum", "img/bubblegum.jpg"],
-  ["Chair", "img/chair.jpg"],
-  ["Cthulhu", "img/cthulhu.jpg"],
-  ["Dog Duck", "img/dog-duck.jpg"],
-  ["Dragon", "img/dragon.jpg"],
-  ["Pen", "img/pen.jpg"],
-  ["Pet Sweep", "img/pet-sweep.jpg"],
-  ["Scissors", "img/scissors.jpg"],
-  ["Shark", "img/shark.jpg"],
-  ["Sweep", "img/sweep.png"],
-  ["Tauntaun", "img/tauntaun.jpg"],
-  ["Unicorn", "img/unicorn.jpg"],
-  ["Water Can", "img/water-can.jpg"],
-  ["Wine Glass", "img/wine-glass.jpg"],
+  ["R2D2 Suitcase", "img/bag.jpg"],
+  ["Banana Slicer", "img/banana.jpg"],
+  ["Toilet Paper & Tablet Holder", "img/bathroom.jpg"],
+  ["Yellow Boots", "img/boots.jpg"],
+  ["Compact Breakfast Maker", "img/breakfast.jpg"],
+  ["Meatball Bubblegum", "img/bubblegum.jpg"],
+  ["Curved Seat Chair", "img/chair.jpg"],
+  ["Cthulhu Toy", "img/cthulhu.jpg"],
+  ["Dog Duckbill", "img/dog-duck.jpg"],
+  ["Canned Dragon Meat", "img/dragon.jpg"],
+  ["Pen Utensil Attachments", "img/pen.jpg"],
+  ["Pet Sweeping Boots", "img/pet-sweep.jpg"],
+  ["Pizza Scissors", "img/scissors.jpg"],
+  ["Shark Sleeping Bag", "img/shark.jpg"],
+  ["Child Sweeper Onesie", "img/sweep.png"],
+  ["Tauntaun Kids Sleeping Bag", "img/tauntaun.jpg"],
+  ["Canned Unicorn Meat", "img/unicorn.jpg"],
+  ["Bendable Water Can", "img/water-can.jpg"],
+  ["Covered Wine Glass", "img/wine-glass.jpg"]
 ];
 
 function createAProduct(name, url) {

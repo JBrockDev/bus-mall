@@ -7,6 +7,7 @@
   <title>Bus Mall</title>
   <link rel="stylesheet" href="./css/reset.css">
   <link rel="stylesheet" href="./css/style.css">
+  
 </head>
 <body>
   <header>
@@ -16,8 +17,13 @@
     </div>
   </header>
   <div id="results">
-    <button id="show-results" type="button" class="hidden">Show Results</button>
-    <h2 id="title" class="hidden">Results</h2>
+    
+    <div id="results-head-div">
+      <button id="show-results" class="hidden type="button" class="hidden">Show Results</button>
+      <h2 id="title"  class="hidden">Results</h2> 
+      <button id="view-pie" class="hidden" type="button">View All 🥧</button>
+      <button id="view-graph" class="hidden" type="button">View All 📊</button>
+    </div>
     <ul id="result-ul">
 
     </ul>
@@ -49,6 +55,8 @@
     </div>
   </main>
   <footer></footer>
+  <!-- <canvas id="myChart" width="400" height="400"></canvas> -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
