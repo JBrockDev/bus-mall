@@ -2,6 +2,8 @@
 'use strict';
 console.log("Initialized");
 
+let canvasChart;
+
 function round(value) {
   var multiplier = Math.pow(10, 1);
   return Math.round(value * multiplier) / multiplier;
@@ -38,7 +40,7 @@ function toggleHidden(id) {
 function handleResultClick() {
   toggleHidden("title");
   toggleHidden("view-pie")
-  toggleHidden("view-graph");
+  toggleHidden("view-bar");
   toggleHidden("show-results");
   toggleHidden("result-ul");
   Product.renderResults();
@@ -183,6 +185,21 @@ let newProducts = [
   ["Covered Wine Glass", "img/wine-glass.jpg"]
 ];
 
+let backgroundColours = [
+  "rgb(128, 0, 0)", "rgb(230, 25, 75)", "rgb(250, 190, 212)", "rgb(154, 99, 36)", "rgb(245, 130, 49)", 
+  "rgb(255, 216, 177)", "rgb(128, 128, 0)", "rgb(255, 225, 25)", "rgb(255, 250, 200)", "rgb(191, 239, 69)", 
+  "rgb(60, 180, 75)", "rgb(170, 255, 195)", "rgb(70, 153, 144)", "rgb(66, 212, 244)", "rgb(0, 0, 117)", 
+  "rgb(67, 99, 216)", "rgb(145, 30, 180)", "rgb(220, 190, 255)", "rgb(240, 50, 230)", "#000000", "#ffffff"
+];
+
+let borderColours = [
+  "rgb(128, 0, 0, 0.2)", "rgb(230, 25, 75, 0.2)", "rgb(250, 190, 212, 0.2)", "rgb(154, 99, 36, 0.2)", 
+  "rgb(245, 130, 49, 0.2)", "rgb(255, 216, 177, 0.2)", "rgb(128, 128, 0, 0.2)", "rgb(255, 225, 25, 0.2)", 
+  "rgb(255, 250, 200, 0.2)", "rgb(191, 239, 69, 0.2)", "rgb(60, 180, 75, 0.2)", "rgb(170, 255, 195, 0.2)", 
+  "rgb(70, 153, 144, 0.2)", "rgb(66, 212, 244, 0.2)", "rgb(0, 0, 117, 0.2)", "rgb(67, 99, 216, 0.2)", 
+  "rgb(145, 30, 180, 0.2)", "rgb(220, 190, 255, 0.2)", "rgb(240, 50, 230, 0.2)", "#000000", "#ffffff"
+];
+
 function createAProduct(name, url) {
   Product.products.push(new Product(name, url));
 }
@@ -195,6 +212,114 @@ function generateProducts() {
     createAProduct(name, url);
   }
 }
+
+
+// --- chart.js
+function createAllSetup(type) {
+  let labelDataObject = getAllLabelsAndData();
+  const data = {
+    labels: labelDataObject.labels,
+    datasets: [{
+      label: "All Products",
+      data: labelDataObject.data,
+      backgroundColor: backgroundColours
+    }]
+  }
+  const config = {};
+
+  if (type === "pie") {
+    config.type = "pie";
+    data.datasets[0].hoverOffset = 4;
+  } else if (type === "bar") {
+    config.type = "bar";
+    config.options = {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+    data.datasets[0].borderWidth = 1;
+    data.datasets[0].borderColor = borderColours;
+  }
+  config.data = data;
+  return config;
+}
+
+function renderAllChart(elementId, config) {
+  console.log(elementId);
+  console.log(config);
+  if (canvasChart !== undefined) {
+    canvasChart.destroy();
+  }
+  canvasChart = new Chart(
+    document.getElementById(elementId).getContext('2d'),
+    config
+  );
+}
+
+function getAllLabelsAndData() {
+  let returnObject = {
+    labels: [],
+    data: []
+  }
+  for (let product of Product.products) {
+    returnObject.labels.push(product.name);
+    returnObject.data.push(product.votedFor);
+  }
+  return returnObject;
+}
+
+
+
+
+
+// --- modal
+
+let allPieBtn = document.getElementById("view-pie");
+let allBarBtn = document.getElementById("view-bar");
+let modal = document.querySelector(".modal");
+let closeBtn = document.querySelector(".close-btn");
+let cancelBtn = document.getElementById("cancel");
+allPieBtn.onclick = function(){
+  displayModal("pie");
+}
+allBarBtn.onclick = function() {
+  displayModal("bar");
+}
+closeBtn.onclick = function(){
+  handleClose();
+}
+cancelBtn.onclick = function() {
+  handleClose();
+}
+window.onclick = function(e){
+  if(e.target == modal){
+    handleClose();
+  }
+}
+
+function handleClose() {
+  modal.style.display = "none";
+}
+
+function displayModal(type, data) {
+  modal.style.display = "block";
+  let title = document.getElementById("modal-h3");
+  let productsChart = "productsChart";
+  let config;
+  if (type === "pie") {
+    console.log("Pie");
+    title.textContent = "Pie Chart (All Products)";
+    config = createAllSetup("pie");
+  } else if (type === "bar") {
+    title.textContent = "Bar Chart (All Products)";
+    config = createAllSetup("bar");
+  }
+  renderAllChart(productsChart, config)
+}
+
+
 
 
 generateProducts();
