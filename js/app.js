@@ -121,6 +121,8 @@ Product.renderResults = function() {
     pieButton.textContent = "🥧";
     let barButton = _createElement("button", newLi);
     barButton.textContent = "📊";
+    pieButton.addEventListener('click', displayModal);
+    barButton.addEventListener('click', displayModal);
     i++;
   }
 }
@@ -139,12 +141,17 @@ function getOutputString(product) {
   if (product.displayed === 0) {
     percentage = 0;
   } else {
-    percentage = product.votedFor / product.displayed;
-    percentage *= 100;
-    percentage = round(percentage);
+    percentage = getPercentage(product);
   }
   let outputString = product.name + ": " + product.votedFor + " out of " + product.displayed + " shown. (" + percentage + "%)";
   return outputString;
+}
+
+function getPercentage(product) {
+  let percentage = product.votedFor / product.displayed;
+  percentage *= 100;
+  percentage = round(percentage);
+  return percentage;
 }
 
 function randomProduct(min, max) {
@@ -215,18 +222,35 @@ function generateProducts() {
 
 
 // --- chart.js
+function createSingleSetup(type, index) {
+  let config = createDataConfig(type,index);
+  return config;
+}
+
 function createAllSetup(type) {
-  let labelDataObject = getAllLabelsAndData();
+  let config = createDataConfig(type);
+  return config;
+}
+
+function createDataConfig(type, index) {
+  let labelDataObject;
+  let label;
+  if (index === undefined) {
+    labelDataObject = getAllLabelsAndData();
+    label = "All Products";
+  } else {
+    labelDataObject = getSingleLabelAndData(index);
+    label = Product.products[index].name;
+  }
   const data = {
     labels: labelDataObject.labels,
     datasets: [{
-      label: "All Products",
+      label: label,
       data: labelDataObject.data,
       backgroundColor: backgroundColours
     }]
   }
   const config = {};
-
   if (type === "pie") {
     config.type = "pie";
     data.datasets[0].hoverOffset = 4;
@@ -244,9 +268,10 @@ function createAllSetup(type) {
   }
   config.data = data;
   return config;
+
 }
 
-function renderAllChart(elementId, config) {
+function renderAllCharts(elementId, config) {
   console.log(elementId);
   console.log(config);
   if (canvasChart !== undefined) {
@@ -256,6 +281,17 @@ function renderAllChart(elementId, config) {
     document.getElementById(elementId).getContext('2d'),
     config
   );
+}
+
+function getSingleLabelAndData(index) {
+  let product = Product.products[index];
+  let percentageChosen = getPercentage(product);
+  let percentageNotChosen = 100 - percentageChosen;
+  let returnObject = {
+    labels: ["Percent Chosen", "Percent Not Chosen"],
+    data: [percentageChosen, percentageNotChosen]
+  };
+  return returnObject;
 }
 
 function getAllLabelsAndData() {
@@ -282,10 +318,10 @@ let modal = document.querySelector(".modal");
 let closeBtn = document.querySelector(".close-btn");
 let cancelBtn = document.getElementById("cancel");
 allPieBtn.onclick = function(){
-  displayModal("pie");
+  displayModal(null, "pie");
 }
 allBarBtn.onclick = function() {
-  displayModal("bar");
+  displayModal(null, "bar");
 }
 closeBtn.onclick = function(){
   handleClose();
@@ -303,20 +339,38 @@ function handleClose() {
   modal.style.display = "none";
 }
 
-function displayModal(type, data) {
+function displayModal(event, type) {
   modal.style.display = "block";
+  let parentElem;
+  let index;
+  let target;
+  let product;
   let title = document.getElementById("modal-h3");
   let productsChart = "productsChart";
   let config;
+
+  if (event !== null) {
+    target = event.target;
+    parentElem = event.target.parentElement;
+    index = parseInt(parentElem.id);
+    product = Product.products[index];
+  }
+
   if (type === "pie") {
     console.log("Pie");
     title.textContent = "Pie Chart (All Products)";
     config = createAllSetup("pie");
   } else if (type === "bar") {
-    title.textContent = "Bar Chart (All Products)";
+    title.textContent = "Bar Graph (All Products)";
     config = createAllSetup("bar");
+  } else if (target.textContent === "🥧") {
+    title.textContent = "Pie Chart (" + product.name + ") in Perctanges";
+    config = createSingleSetup("pie", index);
+  } else if (target.textContent === "📊") {
+    title.textContent = "Bar Graph (" + product.name + ") in Percentages";
+    config = createSingleSetup("bar", index);
   }
-  renderAllChart(productsChart, config)
+  renderAllCharts(productsChart, config);
 }
 
 
