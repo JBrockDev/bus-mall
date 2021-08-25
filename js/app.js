@@ -15,13 +15,12 @@ function _createElement(element, parent) {
   return newElement;
 }
 
-function Product(name, imgPath) {
+function Product(name, imgPath, id) {
   this.name = name;
   this.imgPath = imgPath;
   this.displayed = 0;
   this.votedFor = 0;
-  this.id = Product.nextId;
-  Product.nextId++;
+  this.id = id;
 }
 
 function sortArray(array) {
@@ -75,7 +74,6 @@ function handleClick() {
   }
 }
 
-Product.nextId = 0;
 Product.totalVotes = 0;
 Product.votesToComplete = 25;
 Product.products = [];
@@ -172,25 +170,25 @@ Product.prototype.renderProduct = function(index) {
 }
 
 let newProducts = [
-  ["R2D2 Suitcase", "img/bag.jpg"],
-  ["Banana Slicer", "img/banana.jpg"],
-  ["Toilet Paper & Tablet Holder", "img/bathroom.jpg"],
-  ["Yellow Boots", "img/boots.jpg"],
-  ["Compact Breakfast Maker", "img/breakfast.jpg"],
-  ["Meatball Bubblegum", "img/bubblegum.jpg"],
-  ["Curved Seat Chair", "img/chair.jpg"],
-  ["Cthulhu Toy", "img/cthulhu.jpg"],
-  ["Dog Duckbill", "img/dog-duck.jpg"],
-  ["Canned Dragon Meat", "img/dragon.jpg"],
-  ["Pen Utensil Attachments", "img/pen.jpg"],
-  ["Pet Sweeping Boots", "img/pet-sweep.jpg"],
-  ["Pizza Scissors", "img/scissors.jpg"],
-  ["Shark Sleeping Bag", "img/shark.jpg"],
-  ["Child Sweeper Onesie", "img/sweep.png"],
-  ["Tauntaun Kids Sleeping Bag", "img/tauntaun.jpg"],
-  ["Canned Unicorn Meat", "img/unicorn.jpg"],
-  ["Bendable Water Can", "img/water-can.jpg"],
-  ["Covered Wine Glass", "img/wine-glass.jpg"]
+  ["R2D2 Suitcase", "img/bag.jpg", "0"],
+  ["Banana Slicer", "img/banana.jpg", "1"],
+  ["Toilet Paper & Tablet Holder", "img/bathroom.jpg", "2"],
+  ["Yellow Boots", "img/boots.jpg", "3"],
+  ["Compact Breakfast Maker", "img/breakfast.jpg", "4"],
+  ["Meatball Bubblegum", "img/bubblegum.jpg", "5"],
+  ["Curved Seat Chair", "img/chair.jpg", "6"],
+  ["Cthulhu Toy", "img/cthulhu.jpg", "7"],
+  ["Dog Duckbill", "img/dog-duck.jpg", "8"],
+  ["Canned Dragon Meat", "img/dragon.jpg", "9"],
+  ["Pen Utensil Attachments", "img/pen.jpg", "10"],
+  ["Pet Sweeping Boots", "img/pet-sweep.jpg", "11"],
+  ["Pizza Scissors", "img/scissors.jpg", "12"],
+  ["Shark Sleeping Bag", "img/shark.jpg", "13"],
+  ["Child Sweeper Onesie", "img/sweep.png", "14"],
+  ["Tauntaun Kids Sleeping Bag", "img/tauntaun.jpg", "15"],
+  ["Canned Unicorn Meat", "img/unicorn.jpg", "16"],
+  ["Bendable Water Can", "img/water-can.jpg", "17"],
+  ["Covered Wine Glass", "img/wine-glass.jpg", "18"]
 ];
 
 let backgroundColours = [
@@ -208,17 +206,53 @@ let borderColours = [
   "rgb(145, 30, 180, 0.2)", "rgb(220, 190, 255, 0.2)", "rgb(240, 50, 230, 0.2)", "#000000", "#ffffff"
 ];
 
-function createAProduct(name, url) {
-  Product.products.push(new Product(name, url));
+function createAProduct(name, imgPath, id) {
+  let newProduct = new Product(name, imgPath, id)
+  Product.products.push(newProduct);
+  return newProduct;
 }
 
+// function generateProducts() {
+//   for (let i = 0; i < newProducts.length; i++) {
+//     let product = newProducts[i];
+//     let name = product[0];
+//     let url = product[1];
+//     let id = product[2];
+//     createAProduct(name, url, id);
+//   }
+// }
+
 function generateProducts() {
+  let oldProductArray = localStorage.getItem("productArray");
+  if (oldProductArray !== null) {
+    oldProductArray = JSON.parse(oldProductArray);
+    for (let product of oldProductArray) {
+      product.id = parseInt(product.id);
+      let currentProduct = createAProduct(product.name, product.imgPath, product.id);
+      currentProduct.displayed = parseInt(product.displayed);
+      currentProduct.votedFor = parseInt(product.votedFor);
+    }
+  }
   for (let i = 0; i < newProducts.length; i++) {
     let product = newProducts[i];
     let name = product[0];
-    let url = product[1];
-    createAProduct(name, url);
+    let imgPath = product[1];
+    let id = product[2];
+    id = parseInt(id);
+    let exists = false;
+    let productCount = Product.products.length;
+    let j = 0;
+    while (exists === false && j < productCount) {
+      if (Product.products[j].id === id) {
+        exists = true;
+      }
+      j++;
+    }
+    if (exists === false) {
+      createAProduct(name, imgPath, id);
+    }
   }
+  localStorage.setItem("productArray", JSON.stringify(Product.products));
 }
 
 
@@ -273,8 +307,6 @@ function createDataConfig(type, index) {
 }
 
 function renderAllCharts(elementId, config) {
-  console.log(elementId);
-  console.log(config);
   if (canvasChart !== undefined) {
     canvasChart.destroy();
   }
@@ -315,26 +347,46 @@ function getAllLabelsAndData() {
   // test = localStorage.getItem("test");
   // console.log(test);
 
+  //for (let product of Product.products) {
+    //   let prodName = product.name.toLowerCase();
+    //   prodName = prodName.split(" ").join("-");
+    //   prodName = prodName.split("&").join("and");
+    //   prodName = "prod-" + prodName;
+    //   let prodStorage = localStorage.getItem(prodName);
+    //       if (prodStorage === null) {
+    //     localStorage.setItem(prodName, [product.votedFor, product.displayed]);
+    //   } else {
+    //     let voteArray = prodStorage.split(",");
+    //     voteArray[0] = parseInt(voteArray[0]);
+    //     voteArray[1] = parseInt(voteArray[1]);
+    //     voteArray[0] += product.votedFor;
+    //     voteArray[1] += product.displayed;
+    //     localStorage.setItem(prodName, voteArray);
+    //     product.votedFor = voteArray[0];
+    //     product.displayed = voteArray[1];
+    //   }
+    // }
+
+    
+
 function addToLocalStorage() {
-  for (let product of Product.products) {
-    let prodName = product.name.toLowerCase();
-    prodName = prodName.split(" ").join("-");
-    prodName = prodName.split("&").join("and");
-    prodName = "prod-" + prodName;
-    let prodStorage = localStorage.getItem(prodName);
-        if (prodStorage === null) {
-      localStorage.setItem(prodName, [product.votedFor, product.displayed]);
-    } else {
-      let voteArray = prodStorage.split(",");
-      voteArray[0] = parseInt(voteArray[0]);
-      voteArray[1] = parseInt(voteArray[1]);
-      voteArray[0] += product.votedFor;
-      voteArray[1] += product.displayed;
-      localStorage.setItem(prodName, voteArray);
-      product.votedFor = voteArray[0];
-      product.displayed = voteArray[1];
-    }
-  }
+  // let oldProductArray = localStorage.getItem("productArray");
+  // if (oldProductArray !== null) {
+  //   oldProductArray = JSON.parse(oldProductArray);
+  //   for (let product of Product.products) {
+  //     let isProduct = false;
+  //     let i = 0;
+  //     while (isProduct !== true) {
+  //       if (product.id === parseInt(oldProductArray[i].id)) {
+  //         product.votedFor += parseInt(oldProductArray[i].votedFor);
+  //         product.displayed += parseInt(oldProductArray[i].votedFor);
+  //         isProduct = true;
+  //       }
+  //       i++;
+  //     }
+  //   }
+  // }
+  localStorage.setItem("productArray", JSON.stringify(Product.products));
 }
 
 
