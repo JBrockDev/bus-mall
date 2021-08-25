@@ -68,6 +68,7 @@ function handleClick() {
   }
   Product.totalVotes++;
   if (Product.totalVotes === Product.votesToComplete) {
+    addToLocalStorage();
     handleResults();
   } else {
     Product.renderProducts();
@@ -307,6 +308,34 @@ function getAllLabelsAndData() {
 }
 
 
+  // localStorage.setItem("test", 123);
+  // let test = localStorage.getItem("test");
+  // console.log(test);
+  // localStorage.removeItem("test");
+  // test = localStorage.getItem("test");
+  // console.log(test);
+
+function addToLocalStorage() {
+  for (let product of Product.products) {
+    let prodName = product.name.toLowerCase();
+    prodName = prodName.split(" ").join("-");
+    prodName = prodName.split("&").join("and");
+    prodName = "prod-" + prodName;
+    let prodStorage = localStorage.getItem(prodName);
+        if (prodStorage === null) {
+      localStorage.setItem(prodName, [product.votedFor, product.displayed]);
+    } else {
+      let voteArray = prodStorage.split(",");
+      voteArray[0] = parseInt(voteArray[0]);
+      voteArray[1] = parseInt(voteArray[1]);
+      voteArray[0] += product.votedFor;
+      voteArray[1] += product.displayed;
+      localStorage.setItem(prodName, voteArray);
+      product.votedFor = voteArray[0];
+      product.displayed = voteArray[1];
+    }
+  }
+}
 
 
 
