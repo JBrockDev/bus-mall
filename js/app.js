@@ -284,8 +284,6 @@ function generateProducts() {
       Product.copyProducts.push(product);
     }
   }
-  console.log(Product.copyProducts);
-  console.log(Product.products);
   // Product.copyProducts = Product.products.slice();
   localStorage.setItem("productArray", JSON.stringify(Product.products));
 }
@@ -473,7 +471,6 @@ function displayModal(event, type) {
   }
 
   if (type === "pie") {
-    console.log("Pie");
     title.textContent = "Pie Chart (All Products)";
     config = createAllSetup("pie");
   } else if (type === "bar") {
