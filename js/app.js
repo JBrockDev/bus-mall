@@ -1,4 +1,3 @@
-
 'use strict';
 console.log("Initialized");
 
@@ -91,33 +90,47 @@ Product.renderProducts = function() {
 }
 
 Product.checkIfEmpty = function() {
+  let isEmpty = false;
   if (Product.copyProducts.length === 0) {
     Product.copyProducts = Product.products.slice();
+    isEmpty = true;
   }
-  return Product.copyProducts;
+  return isEmpty;
+}
+
+function checkRandomProduct(returnObjectArray, wasEmpty) {
+  let index = randomProduct(0, (Product.copyProducts.length - 1));
+  let currentProduct = Product.copyProducts[index];
+  if (wasEmpty === true) { // only need to run a loop would be if the array was recently refilled, optimize efficiency
+    if (returnObjectArray.length === 1) {
+      while (currentProduct.id === returnObjectArray[0].id) {
+        index = randomProduct(0, (Product.copyProducts.length - 1));
+        currentProduct = Product.copyProducts[index];
+      }
+    } else {
+      while (currentProduct.id === returnObjectArray[0].id || currentProduct.id === returnObjectArray[1].id) {
+        index = randomProduct(0, (Product.copyProducts.length - 1));
+        currentProduct = Product.copyProducts[index];
+      }
+    }
+  }
+  returnObjectArray.push(currentProduct);
+  Product.copyProducts.splice(index, 1);
 }
 
 Product.getRandomProducts = function() {
   let returnObjectArray = [];
-  let copyProducts = Product.copyProducts;
+  let wasEmpty = false;
 
-  let index = randomProduct(0, (Product.copyProducts.length - 1));
-  let currentProduct = Product.copyProducts[index];
-  returnObjectArray.push(currentProduct);
-  Product.copyProducts.splice(index, 1);
-  Product.checkIfEmpty();
+  Product.checkIfEmpty(); // incase everything had even views in local storage, array would be empty to start
+  checkRandomProduct(returnObjectArray, wasEmpty);
+  wasEmpty = Product.checkIfEmpty();
 
-  index = randomProduct(0, (Product.copyProducts.length - 1));
-  currentProduct = Product.copyProducts[index];
-  returnObjectArray.push(currentProduct);
-  copyProducts.splice(index, 1);
-  Product.checkIfEmpty();
+  checkRandomProduct(returnObjectArray, wasEmpty);
+  wasEmpty = Product.checkIfEmpty();
 
-  index = randomProduct(0, (Product.copyProducts.length - 1));
-  currentProduct = Product.copyProducts[index];
-  returnObjectArray.push(currentProduct);
-  Product.copyProducts.splice(index, 1);
-  Product.checkIfEmpty();
+  checkRandomProduct(returnObjectArray, wasEmpty);
+  wasEmpty = Product.checkIfEmpty();
 
   return returnObjectArray;
 }
