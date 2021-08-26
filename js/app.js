@@ -77,34 +77,49 @@ function handleClick() {
 Product.totalVotes = 0;
 Product.votesToComplete = 25;
 Product.products = [];
-Product.lastViewedIndexes = [];
+Product.copyProducts = [];
 
 
 
 Product.renderProducts = function() {
-  let indexArray = this.getRandomProducts();
+  let productArray = this.getRandomProducts();
   let i = 1;
-  for (let index of indexArray) {
-    Product.products[index].renderProduct(i);
+  for (let product of productArray) {
+    product.renderProduct(i);
     i++;
   }
 }
 
-Product.getRandomProducts = function() {
-  let returnArray = [];
-  let productArray = this.products;
-  for (let i = 0; i < 3; i++) {
-    let exists = true;
-    while(exists) {
-      let index = randomProduct(0, productArray.length - 1);
-      if (!returnArray.includes(index) && !Product.lastViewedIndexes.includes(index)) {
-        exists = false;
-        returnArray.push(index);
-      }
-    }
+Product.checkIfEmpty = function() {
+  if (Product.copyProducts.length === 0) {
+    Product.copyProducts = Product.products.slice();
   }
-  Product.lastViewedIndexes = [...returnArray];
-  return returnArray;
+  return Product.copyProducts;
+}
+
+Product.getRandomProducts = function() {
+  let returnObjectArray = [];
+  let copyProducts = Product.copyProducts;
+
+  let index = randomProduct(0, (Product.copyProducts.length - 1));
+  let currentProduct = Product.copyProducts[index];
+  returnObjectArray.push(currentProduct);
+  Product.copyProducts.splice(index, 1);
+  Product.checkIfEmpty();
+
+  index = randomProduct(0, (Product.copyProducts.length - 1));
+  currentProduct = Product.copyProducts[index];
+  returnObjectArray.push(currentProduct);
+  copyProducts.splice(index, 1);
+  Product.checkIfEmpty();
+
+  index = randomProduct(0, (Product.copyProducts.length - 1));
+  currentProduct = Product.copyProducts[index];
+  returnObjectArray.push(currentProduct);
+  Product.copyProducts.splice(index, 1);
+  Product.checkIfEmpty();
+
+  return returnObjectArray;
 }
 
 Product.renderResults = function() {
@@ -153,9 +168,13 @@ function getPercentage(product) {
   return percentage;
 }
 
-function randomProduct(min, max) {
+function randomProduct(min, max, roundDown) {
   min = Math.ceil(min);
   max = Math.floor(max);
+  let round = max - min + 1;
+  if (roundDown !== undefined) {
+    round = max - min;
+  }
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
@@ -224,6 +243,8 @@ function createAProduct(name, imgPath, id) {
 
 function generateProducts() {
   let oldProductArray = localStorage.getItem("productArray");
+  let highest = 0;
+  let containsOld = false;
   if (oldProductArray !== null) {
     oldProductArray = JSON.parse(oldProductArray);
     for (let product of oldProductArray) {
@@ -231,6 +252,9 @@ function generateProducts() {
       let currentProduct = createAProduct(product.name, product.imgPath, product.id);
       currentProduct.displayed = parseInt(product.displayed);
       currentProduct.votedFor = parseInt(product.votedFor);
+      if (currentProduct.displayed > highest) {
+        highest = product.displayed;
+      }
     }
   }
   for (let i = 0; i < newProducts.length; i++) {
@@ -242,6 +266,7 @@ function generateProducts() {
     let exists = false;
     let productCount = Product.products.length;
     let j = 0;
+    
     while (exists === false && j < productCount) {
       if (Product.products[j].id === id) {
         exists = true;
@@ -250,8 +275,18 @@ function generateProducts() {
     }
     if (exists === false) {
       createAProduct(name, imgPath, id);
+    } else {
+
     }
   }
+  for (let product of Product.products) {
+    if (product.displayed < highest || highest === 0) {
+      Product.copyProducts.push(product);
+    }
+  }
+  console.log(Product.copyProducts);
+  console.log(Product.products);
+  // Product.copyProducts = Product.products.slice();
   localStorage.setItem("productArray", JSON.stringify(Product.products));
 }
 
