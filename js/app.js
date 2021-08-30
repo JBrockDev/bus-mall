@@ -3,12 +3,12 @@ console.log("Initialized");
 
 let canvasChart;
 
-function round(value) {
+function round(value) { // to round percentages to a single decimal place
   var multiplier = Math.pow(10, 1);
   return Math.round(value * multiplier) / multiplier;
 }
 
-function _createElement(element, parent) {
+function _createElement(element, parent) { // for easier creation and appending of child elements
   let newElement = document.createElement(element);
   parent.appendChild(newElement);
   return newElement;
@@ -22,7 +22,7 @@ function Product(name, imgPath, id) {
   this.id = id;
 }
 
-function sortArray(array) {
+function sortArray(array) { // for sorting of products based on the average percentage a product was clicked
   array.sort(function(a,b) {
     let aAvg = a.votedFor / a.displayed;
     let bAvg = b.votedFor / b.displayed;
@@ -30,7 +30,7 @@ function sortArray(array) {
   });
 }
 
-function toggleHidden(id) {
+function toggleHidden(id) { // for toggling of hidden class to hide or show buttons
   let element = document.getElementById(id);
   element.classList.toggle("hidden");
 }
@@ -55,17 +55,17 @@ function handleClick() {
   let productId = this.parentElement.id;
   productId = parseInt(productId);
   let images = document.getElementsByClassName("prod-img");
-  for (let i = 0; i < Product.products.length; i++) {
+  for (let i = 0; i < Product.products.length; i++) { // increment number of times voted for if the product's image was clicked
     if (Product.products[i].id === productId) {
       Product.products[i].votedFor++;
       i = Product.products.length;
     }
   }
-  for (let image of images) {
+  for (let image of images) { // remove all event listeners
     image.removeEventListener('click', handleClick);
   }
   Product.totalVotes++;
-  if (Product.totalVotes === Product.votesToComplete) {
+  if (Product.totalVotes === Product.votesToComplete) { // save results at end for complete set saving instead of impartial data sets being possible
     addToLocalStorage();
     handleResults();
   } else {
@@ -89,7 +89,8 @@ Product.renderProducts = function() {
   }
 }
 
-Product.checkIfEmpty = function() {
+Product.checkIfEmpty = function() { // this is to check if the copyProducts array is empty, in which case it will re-copy the Product.products array
+                                    // we aren't able to use the spread operator yet, so utilized splice
   let isEmpty = false;
   if (Product.copyProducts.length === 0) {
     Product.copyProducts = Product.products.slice();
@@ -181,13 +182,9 @@ function getPercentage(product) {
   return percentage;
 }
 
-function randomProduct(min, max, roundDown) {
+function randomProduct(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
-  let round = max - min + 1;
-  if (roundDown !== undefined) {
-    round = max - min;
-  }
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
@@ -223,14 +220,14 @@ let newProducts = [
   ["Covered Wine Glass", "img/wine-glass.jpg", "18"]
 ];
 
-let backgroundColours = [
+let backgroundColours = [ // for use with Chart.JS
   "rgb(128, 0, 0)", "rgb(230, 25, 75)", "rgb(250, 190, 212)", "rgb(154, 99, 36)", "rgb(245, 130, 49)", 
   "rgb(255, 216, 177)", "rgb(128, 128, 0)", "rgb(255, 225, 25)", "rgb(255, 250, 200)", "rgb(191, 239, 69)", 
   "rgb(60, 180, 75)", "rgb(170, 255, 195)", "rgb(70, 153, 144)", "rgb(66, 212, 244)", "rgb(0, 0, 117)", 
   "rgb(67, 99, 216)", "rgb(145, 30, 180)", "rgb(220, 190, 255)", "rgb(240, 50, 230)", "#000000", "#ffffff"
 ];
 
-let borderColours = [
+let borderColours = [ // for use with Chart.JS
   "rgb(128, 0, 0, 0.2)", "rgb(230, 25, 75, 0.2)", "rgb(250, 190, 212, 0.2)", "rgb(154, 99, 36, 0.2)", 
   "rgb(245, 130, 49, 0.2)", "rgb(255, 216, 177, 0.2)", "rgb(128, 128, 0, 0.2)", "rgb(255, 225, 25, 0.2)", 
   "rgb(255, 250, 200, 0.2)", "rgb(191, 239, 69, 0.2)", "rgb(60, 180, 75, 0.2)", "rgb(170, 255, 195, 0.2)", 
@@ -257,8 +254,7 @@ function createAProduct(name, imgPath, id) {
 function generateProducts() {
   let oldProductArray = localStorage.getItem("productArray");
   let highest = 0;
-  let containsOld = false;
-  if (oldProductArray !== null) {
+  if (oldProductArray !== null) { // if storage contains results - parse the results and create Product instances accordingly
     oldProductArray = JSON.parse(oldProductArray);
     for (let product of oldProductArray) {
       product.id = parseInt(product.id);
@@ -270,7 +266,7 @@ function generateProducts() {
       }
     }
   }
-  for (let i = 0; i < newProducts.length; i++) {
+  for (let i = 0; i < newProducts.length; i++) { // add the products from the newProducts array
     let product = newProducts[i];
     let name = product[0];
     let imgPath = product[1];
@@ -281,18 +277,18 @@ function generateProducts() {
     let j = 0;
     
     while (exists === false && j < productCount) {
-      if (Product.products[j].id === id) {
+      if (Product.products[j].id === id) { // check if product already exists from local storage
         exists = true;
       }
       j++;
     }
-    if (exists === false) {
+    if (exists === false) { // create product if it doesn't exist in local storage
       createAProduct(name, imgPath, id);
     } else {
 
     }
   }
-  for (let product of Product.products) {
+  for (let product of Product.products) { // start array of possible viewable products with only those that are lower than the highest viewed count for balancing
     if (product.displayed < highest || highest === 0) {
       Product.copyProducts.push(product);
     }
@@ -303,12 +299,12 @@ function generateProducts() {
 
 
 // --- chart.js
-function createSingleSetup(type, index) {
+function createSingleSetup(type, index) { // for single product
   let config = createDataConfig(type,index);
   return config;
 }
 
-function createAllSetup(type) {
+function createAllSetup(type) { // for all products
   let config = createDataConfig(type);
   return config;
 }
@@ -385,53 +381,7 @@ function getAllLabelsAndData() {
   return returnObject;
 }
 
-
-  // localStorage.setItem("test", 123);
-  // let test = localStorage.getItem("test");
-  // console.log(test);
-  // localStorage.removeItem("test");
-  // test = localStorage.getItem("test");
-  // console.log(test);
-
-  //for (let product of Product.products) {
-    //   let prodName = product.name.toLowerCase();
-    //   prodName = prodName.split(" ").join("-");
-    //   prodName = prodName.split("&").join("and");
-    //   prodName = "prod-" + prodName;
-    //   let prodStorage = localStorage.getItem(prodName);
-    //       if (prodStorage === null) {
-    //     localStorage.setItem(prodName, [product.votedFor, product.displayed]);
-    //   } else {
-    //     let voteArray = prodStorage.split(",");
-    //     voteArray[0] = parseInt(voteArray[0]);
-    //     voteArray[1] = parseInt(voteArray[1]);
-    //     voteArray[0] += product.votedFor;
-    //     voteArray[1] += product.displayed;
-    //     localStorage.setItem(prodName, voteArray);
-    //     product.votedFor = voteArray[0];
-    //     product.displayed = voteArray[1];
-    //   }
-    // }
-
-    
-
 function addToLocalStorage() {
-  // let oldProductArray = localStorage.getItem("productArray");
-  // if (oldProductArray !== null) {
-  //   oldProductArray = JSON.parse(oldProductArray);
-  //   for (let product of Product.products) {
-  //     let isProduct = false;
-  //     let i = 0;
-  //     while (isProduct !== true) {
-  //       if (product.id === parseInt(oldProductArray[i].id)) {
-  //         product.votedFor += parseInt(oldProductArray[i].votedFor);
-  //         product.displayed += parseInt(oldProductArray[i].votedFor);
-  //         isProduct = true;
-  //       }
-  //       i++;
-  //     }
-  //   }
-  // }
   localStorage.setItem("productArray", JSON.stringify(Product.products));
 }
 
